@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     # Setup model and data loader
     if opts.trainer == 'MUNIT':
-        trainer = MUNIT_Trainer(config)
+        trainer = MUNIT_Trainer(config,device)
     elif opts.trainer == 'UNIT':
         trainer = UNIT_Trainer(config)
     else:
