@@ -19,7 +19,7 @@ import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='configs/demo_anime_folder.yaml', help='Path to the config file.')
-parser.add_argument('--output_path', type=str, default='.', help="outputs path")
+parser.add_argument('--output_path', type=str, default='../out/munit-anime', help="outputs path")
 parser.add_argument("--resume", action="store_true")
 parser.add_argument('--gpu_ids', default='-1', type=str, help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
 parser.add_argument('--trainer', type=str, default='MUNIT', help="MUNIT|UNIT")
