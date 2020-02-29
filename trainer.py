@@ -24,8 +24,8 @@ class MUNIT_Trainer(nn.Module):
 
         # fix the noise used in sampling
         display_size = int(hyperparameters['display_size'])
-        self.s_a = torch.randn(display_size, self.style_dim, 1, 1)
-        self.s_b = torch.randn(display_size, self.style_dim, 1, 1)
+        self.s_a = torch.randn(display_size, self.style_dim, 1, 1).to(self.device )
+        self.s_b = torch.randn(display_size, self.style_dim, 1, 1).to(self.device)
 
         # Setup the optimizers
         beta1 = hyperparameters['beta1']
@@ -131,9 +131,9 @@ class MUNIT_Trainer(nn.Module):
             c_b, s_b_fake = self.gen_b.encode(x_b[i].unsqueeze(0))
             x_a_recon.append(self.gen_a.decode(c_a, s_a_fake))
             x_b_recon.append(self.gen_b.decode(c_b, s_b_fake))
-            x_ba1.append(self.gen_a.decode(c_b, self.s_a1[i].unsqueeze(0)))
+            x_ba1.append(self.gen_a.decode(c_b, self.s_a[i].unsqueeze(0)))
             x_ba2.append(self.gen_a.decode(c_b, s_a2[i].unsqueeze(0)))
-            x_ab1.append(self.gen_b.decode(c_a, self.s_b1[i].unsqueeze(0)))
+            x_ab1.append(self.gen_b.decode(c_a, self.s_b[i].unsqueeze(0)))
             x_ab2.append(self.gen_b.decode(c_a, s_b2[i].unsqueeze(0)))
         x_a_recon, x_b_recon = torch.cat(x_a_recon), torch.cat(x_b_recon)
         x_ba1, x_ba2 = torch.cat(x_ba1), torch.cat(x_ba2)
