@@ -21,9 +21,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--config', type=str, default='configs/demo_anime_folder.yaml', help='Path to the config file.')
 parser.add_argument('--output_path', type=str, default='.', help="outputs path")
 parser.add_argument("--resume", action="store_true")
+parser.add_argument('--gpu_ids', default='-1', type=str, help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
 parser.add_argument('--trainer', type=str, default='MUNIT', help="MUNIT|UNIT")
 opts = parser.parse_args()
-
+device = torch.device('cuda:{}'.format(opts.gpu_ids)) if opts.gpu_ids == -1 else torch.device('cpu')
 cudnn.benchmark = True
 
 # Load experiment setting
@@ -39,12 +40,12 @@ elif opts.trainer == 'UNIT':
     trainer = UNIT_Trainer(config)
 else:
     sys.exit("Only support MUNIT|UNIT")
-trainer.cuda()
+trainer.to(device)
 train_loader_a, train_loader_b, test_loader_a, test_loader_b = get_all_data_loaders(config)
-train_display_images_a = torch.stack([train_loader_a.dataset[i] for i in range(display_size)]).cuda()
-train_display_images_b = torch.stack([train_loader_b.dataset[i] for i in range(display_size)]).cuda()
-test_display_images_a = torch.stack([test_loader_a.dataset[i] for i in range(display_size)]).cuda()
-test_display_images_b = torch.stack([test_loader_b.dataset[i] for i in range(display_size)]).cuda()
+train_display_images_a = torch.stack([train_loader_a.dataset[i] for i in range(display_size)]).to(device)
+train_display_images_b = torch.stack([train_loader_b.dataset[i] for i in range(display_size)]).to(device)
+test_display_images_a = torch.stack([test_loader_a.dataset[i] for i in range(display_size)]).to(device)
+test_display_images_b = torch.stack([test_loader_b.dataset[i] for i in range(display_size)]).to(device)
 
 # Setup logger and output folders
 model_name = os.path.splitext(os.path.basename(opts.config))[0]
@@ -57,14 +58,15 @@ shutil.copy(opts.config, os.path.join(output_directory, 'config.yaml')) # copy c
 iterations = trainer.resume(checkpoint_directory, hyperparameters=config) if opts.resume else 0
 while True:
     for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
-        trainer.update_learning_rate()
-        images_a, images_b = images_a.cuda().detach(), images_b.cuda().detach()
+
+        images_a.to(device)
+        images_b.to(device)
 
         with Timer("Elapsed time in update: %f"):
             # Main training code
             trainer.dis_update(images_a, images_b, config)
             trainer.gen_update(images_a, images_b, config)
-            torch.cuda.synchronize()
+            # torch.cuda.synchronize()
 
         # Dump training stats in log file
         if (iterations + 1) % config['log_iter'] == 0:
@@ -93,4 +95,6 @@ while True:
         iterations += 1
         if iterations >= max_iter:
             sys.exit('Finish training')
+
+        trainer.update_learning_rate()
 
