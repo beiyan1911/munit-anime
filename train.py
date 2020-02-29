@@ -23,10 +23,10 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str, default='configs/demo_anime_folder.yaml', help='Path to the config file.')
     parser.add_argument('--output_path', type=str, default='../out/munit-anime', help="outputs path")
     parser.add_argument("--resume", action="store_true")
-    parser.add_argument('--gpu_ids', default='-1', type=str, help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
+    parser.add_argument('--gpu_ids', default='0', type=str, help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
     parser.add_argument('--trainer', type=str, default='MUNIT', help="MUNIT|UNIT")
     opts = parser.parse_args()
-    device = torch.device('cuda:{}'.format(opts.gpu_ids)) if opts.gpu_ids == -1 else torch.device('cpu')
+    device = torch.device('cuda:{}'.format(int(opts.gpu_ids))) if opts.gpu_ids != '-1' else torch.device('cpu')
     cudnn.benchmark = True
 
     # Load experiment setting
@@ -61,8 +61,8 @@ if __name__ == '__main__':
     while True:
         for it, (images_a, images_b) in enumerate(zip(train_loader_a, train_loader_b)):
 
-            images_a.to(device)
-            images_b.to(device)
+            images_a = images_a.to(device)
+            images_b = images_b.to(device)
 
             with Timer("Elapsed time in update: %f"):
                 # Main training code
